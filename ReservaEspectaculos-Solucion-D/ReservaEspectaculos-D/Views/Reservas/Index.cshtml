@@ -6,6 +6,51 @@
 
 <h1>Lista de reservas</h1>
 
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Index">
+            <div class="row align-items-end">
+                <div class="col-md-4">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="clienteId">Cliente</label>
+                            <select id="clienteId" name="clienteId" class="form-control form-control-sm" asp-items="ViewBag.ClienteId">
+                                <option value="">Todas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="peliculaId">Pelicula</label>
+                        <select id="peliculaId" name="peliculaId" class="form-control form-control-sm" asp-items="ViewBag.PeliculaId">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="salaId">Sala</label>
+                        <select id="salaId" name="salaId" class="form-control form-control-sm" asp-items="ViewBag.SalaId">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="fecha">Fecha de función</label>
+                        <input type="date" id="fecha" name="fecha" class="form-control form-control-sm" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-sm mr-2">Filtrar</button>
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">Limpiar</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <table class="table">
     <thead>
         <tr>
@@ -42,9 +87,8 @@
                 @Html.DisplayFor(modelItem => item.CantidadButacas)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Detalles</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>
+                <a asp-action="Detalles" asp-route-id="@item.Id">Detalles</a> |
+                <a asp-action="EliminarReserva" asp-route-id="@item.Id">Eliminar</a>
             </td>
         </tr>
 }

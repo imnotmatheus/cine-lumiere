@@ -11,7 +11,7 @@ namespace ReservaEspectaculos_D.Models
 
         [Required(ErrorMessage = ErrorHelper.Requerido)]
         [Range(1, 500, ErrorMessage = ErrorHelper.NumRange)]
-        [Remote(action:"NumeroDisponible", controller:"Salas")]
+        [Remote(action:"NumeroDisponible", controller:"Salas", AdditionalFields = nameof(Id))]
         public int Numero { get; set; }
 
         [Display(Name = "Tipo de sala")]

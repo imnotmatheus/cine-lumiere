@@ -13,7 +13,7 @@ namespace ReservaEspectaculos_D.Models
         [Required(ErrorMessage = ErrorHelper.Requerido)]
         [MaxLength(170, ErrorMessage = ErrorHelper.StrMax)]
         [Display(Name = "Título")]
-        [Remote(action:"TituloDisponible", controller:"Peliculas")]
+        [Remote(action:"TituloDisponible", controller:"Peliculas", AdditionalFields = nameof(Id))]
         public string Titulo { get; set; }
 
         [DataType(DataType.Date, ErrorMessage = ErrorHelper.Data)]

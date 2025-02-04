@@ -15,7 +15,7 @@ namespace ReservaEspectaculos_D.Models.ViewModels
         [DataType(DataType.MultilineText)]
         public string Descripcion { get; set; }
 
-        public IEnumerable<Funcion> Funciones { get; set; }
+        public IEnumerable<FuncionEnIndex> Funciones { get; set; }
 
         public Genero Genero { get; set; }
 

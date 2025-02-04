@@ -1,4 +1,5 @@
 ﻿using System;
+using ReservaEspectaculos_D.Models;
 
 namespace ReservaEspectaculos_D.Utils
 {
@@ -10,11 +11,6 @@ namespace ReservaEspectaculos_D.Utils
             var horaActual = TimeOnly.FromDateTime(ahora);
             var fechaActual = DateOnly.FromDateTime(ahora);
             return (horaActual, fechaActual);
-        }
-
-        public static DateOnly ObtenerFechaActual()
-        {
-            return DateOnly.FromDateTime(DateTime.Now);
         }
     }
 }

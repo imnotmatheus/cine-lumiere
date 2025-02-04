@@ -7,7 +7,9 @@ namespace ReservaEspectaculos_D.Utils
     {
         public static bool VerificarDisponibilidad(Funcion funcion, int cantidadAReservar)
         {
-            return funcion.ButacasDisponibles >= cantidadAReservar;
+            int butacasDispnibles = FuncionHelper.ButacasDisponibles(funcion);
+
+            return butacasDispnibles >= cantidadAReservar;
         }
 
         public static void ActualizarEstadoReserva(Reserva reserva)

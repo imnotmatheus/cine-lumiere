@@ -60,126 +60,6 @@ namespace ReservaEspectaculos_D.Controllers
             return View(cliente);
         }
 
-        [Authorize(Roles = "Cliente")]
-        public async Task<IActionResult> MisReservas()
-        {
-            var cliente = await _userManager.GetUserAsync(User);
-            int id = cliente.Id;
-            var reservas = _context.Reservas
-                .Where(r => r.ClienteId == id)
-                .ToList();
-
-            foreach (Reserva r in reservas)
-            {
-                r.Funcion = _context.Funciones.Find(r.FuncionId);
-                ReservaHelper.ActualizarEstadoReserva(r);
-            }
-
-            MisReservasCliente model = new()
-            {
-                ClienteId = id,
-                //(f.Fecha > fechaActual || (f.Fecha == fechaActual && f.Hora > horaActual))
-                ReservasVigentes = reservas.Where(r =>
-                    r.EstadoReserva == EstadoReserva.Activa)
-                .OrderBy(r => r.Funcion.Fecha),
-                ReservasPasadas = reservas.Where(r =>
-                    r.EstadoReserva == EstadoReserva.Inactiva)
-                .OrderBy(r => r.Funcion.Fecha)
-            }; ;
-            return View(model);
-        }
-
-        [Authorize(Roles = "Cliente")]
-        public async Task<IActionResult> DetalleReserva(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var reserva = await _context.Reservas
-                .Include(r => r.Cliente)
-                .Include(r => r.Funcion)
-                    .ThenInclude(f => f.Sala)
-                        .ThenInclude(s => s.TipoSala)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (reserva == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user.Id != reserva.ClienteId)
-            {
-                return Unauthorized();
-            }
-
-            return View(reserva);
-        }
-
-        [Authorize(Roles = "Cliente")]
-        // GET: Reservas/Delete/5
-        public async Task<IActionResult> EliminarReserva(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var reserva = await _context.Reservas
-                .Include(r => r.Cliente)
-                .Include(r => r.Funcion)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user.Id != reserva.ClienteId)
-            {
-                return Unauthorized();
-            }
-
-            if (reserva == null)
-            {
-                return NotFound();
-            }
-
-            return View(reserva);
-        }
-
-        // POST: Reservas/Delete/5
-        [HttpPost, ActionName("EliminarReserva")]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Cliente")]
-        public async Task<IActionResult> EliminarReservaConfirmado(int id)
-        {
-            var reserva = await _context.Reservas
-                    .Include(r => r.Funcion)
-                    .FirstOrDefaultAsync(m => m.Id == id);
-
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user.Id != reserva.ClienteId)
-            {
-                return Unauthorized();
-            }
-
-            DateTime fechaReserva = reserva.Funcion.Fecha.ToDateTime(reserva.Funcion.Hora);
-            if (fechaReserva.AddHours(-24) < DateTime.Now)
-            {
-                TempData["ErrorMessage"] = "No es posible eliminar reserva 24hs previas a la función";
-                return RedirectToAction(nameof(EliminarReserva), new { id });
-
-            }
-
-            if (reserva != null)
-            {
-                _context.Reservas.Remove(reserva);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction("MisReservas", "Clientes");
-        }
-
         // GET: Clientes/Create
         public IActionResult Create()
         {
@@ -238,7 +118,7 @@ namespace ReservaEspectaculos_D.Controllers
                 return NotFound();
             }
 
-            CambioPerfil perfil = new CambioPerfil()
+            CambioPerfil perfil = new()
             {
                 PersonaId = cliente.Id,
                 Nombre = cliente.Nombre,
@@ -291,7 +171,7 @@ namespace ReservaEspectaculos_D.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ClienteExists(cliente.Id))
+                    if (!PersonaHelper.ClienteExists(cliente.Id, _context))
                     {
                         return NotFound();
                     }
@@ -351,11 +231,6 @@ namespace ReservaEspectaculos_D.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ClienteExists(int id)
-        {
-            return _context.Clientes.Any(e => e.Id == id);
         }
 
         [Authorize(Roles = "Cliente")]

@@ -8,7 +8,9 @@ namespace ReservaEspectaculos_D.Models.ViewModels
         public int PeliculaId { get; set; }
         public int CantidadButacas { get; set; }
         public int? FuncionSeleccionadaId { get; set; }
-        public Funcion FuncionSeleccionada { get; set; }
-        public List<Funcion> Funciones { get; set; }
+        public FuncionEnIndex FuncionSeleccionada { get; set; }
+        public List<FuncionEnIndex> Funciones { get; set; }
+
+
     }
 }

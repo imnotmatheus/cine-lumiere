@@ -28,11 +28,6 @@
                 <textarea asp-for="Descripcion" class="form-control"></textarea>
                 <span asp-validation-for="Descripcion" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ButacasDisponibles" class="control-label"></label>
-                <input asp-for="ButacasDisponibles" class="form-control" />
-                <span asp-validation-for="ButacasDisponibles" class="text-danger"></span>
-            </div>
             <div class="form-group form-check form-switch">
                 <label class="form-check-label">
                     <input class="form-check-input" asp-for="Confirmada" type="checkbox" role="switch" /> @Html.DisplayNameFor(model => model.Confirmada)

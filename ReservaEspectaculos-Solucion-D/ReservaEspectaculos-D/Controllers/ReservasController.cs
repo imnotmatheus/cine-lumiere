@@ -29,14 +29,66 @@ namespace ReservaEspectaculos_D.Controllers
 
         // GET: Reservas
         [Authorize(Roles = "Empleado, Administrador")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? clienteId, int? peliculaId, int? salaId, DateOnly? fecha)
         {
-            var reservaEspectaculosDb = await _context.Reservas.Include(r => r.Cliente).Include(r => r.Funcion).ToListAsync();
-            return View(reservaEspectaculosDb);
+            var reservas = await _context.Reservas
+                .Include(r => r.Cliente)
+                .Include(r => r.Funcion)
+                .ToListAsync();
+
+            if (clienteId != null)
+            {
+                if (PersonaHelper.ClienteExists((int)clienteId, _context))
+                {
+                    reservas = reservas.Where(r => r.ClienteId == clienteId).ToList();
+                } else
+                {
+                    reservas = null;
+                }
+            }
+
+            if (peliculaId != null && reservas != null)
+            {
+                if (PeliculaHelper.PeliculaExists((int)peliculaId, _context))
+                {
+                    reservas = reservas.Where(r => r.Funcion.PeliculaId == peliculaId).ToList();
+                } else
+                {
+                    reservas = null;
+                }
+            }
+
+            if (salaId != null && reservas != null)
+            {
+                if (SalaHelper.SalaExists((int)salaId, _context))
+                {
+                    reservas = reservas.Where(r => r.Funcion.SalaId == salaId).ToList();
+                }
+                else
+                {
+                    reservas = null;
+                }
+            }
+
+            if (fecha != null && reservas != null)
+            {
+                reservas = reservas.Where(r => r.Funcion.Fecha == fecha).ToList();
+            }
+
+            ViewData["ClienteId"] = new SelectList(_context.Clientes, "Id", "Apellido");
+            ViewData["PeliculaId"] = new SelectList(_context.Peliculas, "Id", "Titulo");
+            ViewData["SalaId"] = new SelectList(_context.Salas
+                                .Join(_context.Set<TipoSala>(),
+                                sala => sala.TipoSalaId,
+                                tipoSala => tipoSala.Id,
+                                (sala, tipoSala) => new { sala.Id, DisplayText = $"{sala.Numero} - {tipoSala.Nombre}" }), "Id", "DisplayText");
+            
+            return View(reservas);
         }
 
         // GET: Reservas/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [Authorize(Roles = "Empleado, Administrador, Cliente")]
+        public async Task<IActionResult> Detalles(int? id)
         {
             if (id == null)
             {
@@ -54,7 +106,41 @@ namespace ReservaEspectaculos_D.Controllers
                 return NotFound();
             }
 
+            var user = await _userManager.GetUserAsync(User);
+            if (user is Cliente && user.Id != reserva.ClienteId)
+            {
+                return Unauthorized();
+            }
+
             return View(reserva);
+        }
+
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> MisReservas()
+        {
+            var cliente = await _userManager.GetUserAsync(User);
+            int id = cliente.Id;
+            var reservas = _context.Reservas
+                .Where(r => r.ClienteId == id)
+                .ToList();
+
+            foreach (Reserva r in reservas)
+            {
+                r.Funcion = _context.Funciones.Find(r.FuncionId);
+                ReservaHelper.ActualizarEstadoReserva(r);
+            }
+
+            MisReservasCliente model = new()
+            {
+                ClienteId = id,
+                ReservasVigentes = reservas.Where(r =>
+                    r.EstadoReserva == EstadoReserva.Activa)
+                .OrderBy(r => r.Funcion.Fecha),
+                ReservasPasadas = reservas.Where(r =>
+                    r.EstadoReserva == EstadoReserva.Inactiva)
+                .OrderBy(r => r.Funcion.Fecha)
+            }; ;
+            return View(model);
         }
 
         [Authorize(Roles = "Cliente")]
@@ -91,12 +177,26 @@ namespace ReservaEspectaculos_D.Controllers
             }
 
             Funcion funcion = null;
+            FuncionEnIndex funcionEnIndex = null;
+
             if (funcionId != null) {
-                funcion = await _context.Funciones.FindAsync(funcionId);
+
+                funcion = await _context.Funciones
+                    .Include(f => f.Reservas)
+                    .Include(f => f.Sala)
+                    .FirstOrDefaultAsync(f => f.Id == funcionId);
+
                 if (funcion == null || !funcion.Confirmada)
                 {
                     return NotFound("No se encontró una función con ese Id");
                 }
+
+                    funcionEnIndex = new()
+                {
+                    Funcion = funcion,
+                    ButacasDisponibles = FuncionHelper.ButacasDisponibles(funcion)
+                };
+
             }
 
             HacerReserva modelo = new()
@@ -104,7 +204,7 @@ namespace ReservaEspectaculos_D.Controllers
                 PeliculaId = peliculaId.Value,
                 ClienteId = clienteId,
                 FuncionSeleccionadaId = funcionId,
-                FuncionSeleccionada = funcion
+                FuncionSeleccionada = funcionEnIndex,
             };
 
             return View(modelo);
@@ -123,14 +223,18 @@ namespace ReservaEspectaculos_D.Controllers
                 return BadRequest("Al menos debes reservar una butaca");
             }
 
-            if (!await PeliculaExiste(model.PeliculaId))
+            if (!PeliculaHelper.PeliculaExists(model.PeliculaId, _context))
             {
                 return NotFound("No existe una película con ese Id.");
             }
 
             if (model.FuncionSeleccionadaId != null)
             {
-                var funcion = _context.Funciones.Find(model.FuncionSeleccionadaId);
+                var funcion = await _context.Funciones
+                             .Include(f => f.Reservas)
+                             .Include(f => f.Sala)
+                             .FirstOrDefaultAsync(f => f.Id == model.FuncionSeleccionadaId);
+                              
 
                 if (funcion == null)
                 {
@@ -142,12 +246,34 @@ namespace ReservaEspectaculos_D.Controllers
                     return BadRequest("Funcion no tiene esta cantidad de butacas disponibles");
                 }
 
-                model.FuncionSeleccionada = funcion;
+                FuncionEnIndex funcionEnIndex = new()
+                {
+                    Funcion = funcion,
+                    ButacasDisponibles = FuncionHelper.ButacasDisponibles(funcion)
+                };
+
+                model.FuncionSeleccionada = funcionEnIndex;
 
                 return View(model);
             }
 
-            model.Funciones = await ObtenerFuncionesPorPelicula(model.PeliculaId, model.CantidadButacas);
+            var funciones = await ObtenerFuncionesPorPelicula(model.PeliculaId, model.CantidadButacas);
+
+            List<FuncionEnIndex> funcionesEnIndex = [];
+            foreach (var funcion in funciones)
+            {
+                FuncionEnIndex funcionEnIndex = new()
+                {
+                    Funcion = funcion,
+                    ButacasDisponibles = FuncionHelper.ButacasDisponibles(funcion),
+                };
+                if (funcionEnIndex.ButacasDisponibles >= model.CantidadButacas) 
+                    {
+                    funcionesEnIndex.Add(funcionEnIndex);
+                    }
+            }
+
+            model.Funciones = funcionesEnIndex; 
 
             return View(model);
         }
@@ -214,7 +340,6 @@ namespace ReservaEspectaculos_D.Controllers
                 };
 
                 var funcion = await _context.Funciones.FindAsync(model.FuncionId);
-                funcion.ButacasDisponibles -= reserva.CantidadButacas;
 
                 try
                 {
@@ -238,7 +363,7 @@ namespace ReservaEspectaculos_D.Controllers
                     ModelState.AddModelError(string.Empty, ErrorHelper.ErrorGenerico(e));
                 }
 
-                return RedirectToAction("MisReservas", "Clientes");
+                return RedirectToAction("MisReservas");
             }
 
             return View(model);
@@ -260,7 +385,7 @@ namespace ReservaEspectaculos_D.Controllers
 
         [Authorize(Roles = "Empleado, Administrador, Cliente")]
         // GET: Reservas/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> EliminarReserva(int? id)
         {
             if (id == null)
             {
@@ -271,8 +396,14 @@ namespace ReservaEspectaculos_D.Controllers
                     .Include(r => r.Funcion)
                     .FirstOrDefaultAsync(m => m.Id == id);
 
+            var user = await _userManager.GetUserAsync(User);
+            if (user is Cliente && user.Id != reserva.ClienteId)
+            {
+                return Unauthorized();
+            }
 
-                if (reserva == null)
+
+            if (reserva == null)
             {
                 return NotFound();
             }
@@ -281,23 +412,26 @@ namespace ReservaEspectaculos_D.Controllers
         }
 
         // POST: Reservas/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost, ActionName("EliminarConfirmado")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Empleado, Administrador, Cliente")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> EliminarConfirmado(int id)
         {
             var reserva = await _context.Reservas
                     .Include(r => r.Funcion)
                     .FirstOrDefaultAsync(m => m.Id == id);
 
+            var user = await _userManager.GetUserAsync(User);
+            if (user is Cliente && user.Id != reserva.ClienteId)
+            {
+                return Unauthorized();
+            }
+
             DateTime fechaReserva = reserva.Funcion.Fecha.ToDateTime(reserva.Funcion.Hora);
             if (fechaReserva.AddHours(-24) < DateTime.Now)
             {
-
-
                 TempData["ErrorMessage"] = "No es posible eliminar reserva 24hs previas a la función";
-                return RedirectToAction(nameof(Delete), new { id = id });
-
+                return RedirectToAction(nameof(EliminarReserva), new { id });
             }
             if (reserva != null)
             {
@@ -305,7 +439,15 @@ namespace ReservaEspectaculos_D.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction("MisReservas", "Clientes");
+
+            if (user is Cliente)
+            {
+                return RedirectToAction("MisReservas");
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         private async Task<bool> ReservaExists(int id)
@@ -320,24 +462,22 @@ namespace ReservaEspectaculos_D.Controllers
                 .SelectMany(c => c.Reservas)
                 .AnyAsync(r => r.EstadoReserva == EstadoReserva.Activa);
         }
-        
-        private async Task<bool> PeliculaExiste(int peliculaId)
-        {
-            return await _context.Peliculas.AnyAsync(p => p.Id == peliculaId);
-        }
 
         private async Task<List<Funcion>> ObtenerFuncionesPorPelicula(int peliculaId, int cantidadButacas)
         {
             var (horaActual, fechaActual) = DateTimeHelper.ObtenerInfoDateTime();
 
-            return await _context.Funciones.Where(f =>
+            var funciones = await _context.Funciones.Where(f =>
                     f.PeliculaId == peliculaId && f.Fecha <= fechaActual.AddDays(7) &&
                     (f.Fecha > fechaActual || (f.Fecha == fechaActual && f.Hora > horaActual)) &&
-                    f.Confirmada == true &&
-                    f.ButacasDisponibles >= cantidadButacas)
+                    f.Confirmada)
+                .Include(f => f.Reservas)
                 .Include(f => f.Sala)
                 .ThenInclude(s => s.TipoSala)
                 .ToListAsync();
+
+
+            return funciones.Where(f => FuncionHelper.ButacasDisponibles(f) >= cantidadButacas).ToList();
         }
 
         private async Task ActualizarEstadoReservas()

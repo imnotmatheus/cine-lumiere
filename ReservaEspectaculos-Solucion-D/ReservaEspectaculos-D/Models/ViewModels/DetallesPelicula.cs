@@ -10,6 +10,6 @@ namespace ReservaEspectaculos_D.Models.ViewModels
 
         [DisplayName("Recaudación del último mes")]
         public decimal RecaudacionTotal { get; set; }
-        public List<Funcion> Funciones { get; set; } 
+        public List<FuncionEnIndex> Funciones { get; set; } 
     }
 }

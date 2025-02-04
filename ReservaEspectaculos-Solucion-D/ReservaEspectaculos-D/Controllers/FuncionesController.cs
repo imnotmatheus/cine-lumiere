@@ -12,6 +12,7 @@ using ReservaEspectaculos_D.Data;
 using ReservaEspectaculos_D.Models;
 using ReservaEspectaculos_D.Models.ViewModels;
 using ReservaEspectaculos_D.Utils;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ReservaEspectaculos_D.Controllers
 {
@@ -29,26 +30,60 @@ namespace ReservaEspectaculos_D.Controllers
         }
 
         // GET: Funciones
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? peliculaId, int? salaId)
         {
-            var funciones = await _context.Funciones
+            IEnumerable<Funcion> funciones = await _context.Funciones
                 .Include(f => f.Pelicula)
                 .Include(f => f.Reservas)
                 .Include(f => f.Sala)
                 .ThenInclude(s => s.TipoSala).ToListAsync();
 
+            if (peliculaId != null)
+            {
+                if (PeliculaHelper.PeliculaExists((int)peliculaId, _context))
+                {
+                    funciones = funciones.Where(f => f.PeliculaId == peliculaId);
+                }
+                else
+                {
+                    funciones = null;
+                }
+            }
+
+            if (salaId != null && funciones != null)
+            {
+                if (SalaHelper.SalaExists((int)salaId, _context))
+                {
+                    funciones = funciones.Where(f => f.SalaId == salaId);
+                } else
+                {
+                    funciones = null;
+                }
+            }
+
             List<FuncionEnIndex> verFunciones = [];
 
-            foreach (Funcion f in funciones)
+            if (funciones != null)
             {
-                FuncionEnIndex model = new()
+                foreach (Funcion f in funciones)
                 {
-                    Funcion = f,
-                    Recaudacion = FuncionHelper.calcularRecaudacion(f)
-                };
+                    FuncionEnIndex model = new()
+                    {
+                        Funcion = f,
+                        Recaudacion = FuncionHelper.calcularRecaudacion(f),
+                        ButacasDisponibles = FuncionHelper.ButacasDisponibles(f),
+                    };
 
-                verFunciones.Add(model);
+                    verFunciones.Add(model);
+                }
             }
+
+            ViewData["PeliculaId"] = new SelectList(_context.Peliculas, "Id", "Titulo");
+            ViewData["SalaId"] = new SelectList(_context.Salas
+                                .Join(_context.Set<TipoSala>(),
+                                sala => sala.TipoSalaId,
+                                tipoSala => tipoSala.Id,
+                                (sala, tipoSala) => new { sala.Id, DisplayText = $"{sala.Numero} - {tipoSala.Nombre}" }), "Id", "DisplayText");
 
             return View(verFunciones);
         }
@@ -63,6 +98,7 @@ namespace ReservaEspectaculos_D.Controllers
 
             var funcion = await _context.Funciones
                 .Include(f => f.Pelicula)
+                .Include(f => f.Reservas)
                 .Include(f => f.Sala)
                 .ThenInclude(s => s.TipoSala)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -72,7 +108,7 @@ namespace ReservaEspectaculos_D.Controllers
             {
                 return NotFound();
             }
-            int butacasDisponibles = funcion.ButacasDisponibles;
+            int butacasDisponibles = FuncionHelper.ButacasDisponibles(funcion);
             int capacidad = funcion.Sala.CapacidadButacas;
             float ocupacion = 0;
 
@@ -81,6 +117,7 @@ namespace ReservaEspectaculos_D.Controllers
                 ocupacion = ((capacidad - butacasDisponibles) / (float)capacidad) * 100;
             }
             ViewData["Ocupacion"] = ocupacion;
+            ViewData["ButacasDisponibles"] = FuncionHelper.ButacasDisponibles(funcion);
 
             return View(funcion);
         }
@@ -108,17 +145,13 @@ namespace ReservaEspectaculos_D.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Fecha,Hora,Descripcion,ButacasDisponibles,Confirmada,PeliculaId,SalaId")] Funcion funcion)
+        public async Task<IActionResult> Create([Bind("Id,Fecha,Hora,Descripcion,Confirmada,PeliculaId,SalaId")] Funcion funcion)
         {
             var salaSeleccionada = await _context.Salas.FirstOrDefaultAsync(s => s.Id == funcion.SalaId);
 
-            if (funcion.Fecha < DateOnly.FromDateTime(DateTime.Now))
+            if (FuncionPasada(funcion))
             {
                 ModelState.AddModelError("Fecha", "No es posible crear una función en el pasado");
-            }
-            else if (funcion.Fecha == DateOnly.FromDateTime(DateTime.Now) && funcion.Hora < TimeOnly.FromDateTime(DateTime.Now))
-            {
-                ModelState.AddModelError("Hora", "No es posible crear una función en el pasado");
             }
 
             if (salaSeleccionada == null)
@@ -133,7 +166,6 @@ namespace ReservaEspectaculos_D.Controllers
 
             if (ModelState.IsValid)
             {
-                funcion.ButacasDisponibles = salaSeleccionada.CapacidadButacas;
                 funcion.Confirmada = true;
                 _context.Add(funcion);
 
@@ -234,7 +266,7 @@ namespace ReservaEspectaculos_D.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Fecha,Hora,Descripcion,ButacasDisponibles,Confirmada,PeliculaId,SalaId")] Funcion funcion)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Fecha,Hora,Descripcion,Confirmada,PeliculaId,SalaId")] Funcion funcion)
         {
             if (id != funcion.Id)
             {
@@ -293,11 +325,15 @@ namespace ReservaEspectaculos_D.Controllers
             var funcion = await _context.Funciones
                 .Include(f => f.Pelicula)
                 .Include(f => f.Sala)
+                .Include(f => f.Reservas)
                 .FirstOrDefaultAsync(m => m.Id == id);
+                
             if (funcion == null)
             {
                 return NotFound();
             }
+
+            ViewData["ButacasDisponibles"] = FuncionHelper.ButacasDisponibles(funcion);
 
             return View(funcion);
         }
@@ -334,36 +370,41 @@ namespace ReservaEspectaculos_D.Controllers
 
         private bool FuncionDuplicada(Funcion funcion)
         {
-            if (funcion.Id != 0)
+            if (funcion != null)
             {
+                int duracion = FuncionHelper.DuracionFunciones;
+                TimeOnly horaInicio = funcion.Hora;
+                TimeOnly horaFinal = funcion.Hora.AddHours(duracion);
+
                 return _context.Funciones.Any(f =>
-                        (funcion.Id != f.Id) && (
-                        f.Fecha == funcion.Fecha &&
-                        f.Hora == funcion.Hora &&
-                        f.PeliculaId == funcion.PeliculaId &&
-                        f.SalaId == funcion.SalaId)
-                        );
+                f.Fecha == funcion.Fecha &&
+                f.SalaId == funcion.SalaId &&
+                (funcion.Id == 0 || f.Id != funcion.Id) &&
+                    ((horaInicio >= f.Hora && horaInicio <= f.Hora.AddHours(duracion)) ||
+                    (horaFinal >= f.Hora && horaFinal <= f.Hora.AddHours(duracion)))
+                );
             }
-            else
-            {
-                return _context.Funciones.Any(f =>
-                        f.Fecha == funcion.Fecha &&
-                        f.Hora == funcion.Hora &&
-                        f.PeliculaId == funcion.PeliculaId &&
-                        f.SalaId == funcion.SalaId);
-            }
+            return false;
         }
 
         private async Task<bool> FuncionPasada(int id)
         {
-            bool pasada = false;
             if (FuncionExists(id))
             {
-                var (horaActual, fechaActual) = DateTimeHelper.ObtenerInfoDateTime();
                 Funcion funcion = await _context.Funciones.FindAsync(id);
-                pasada = funcion.Fecha < fechaActual || (funcion.Fecha == fechaActual && funcion.Hora < horaActual);
+                return FuncionPasada(funcion);
             }
-            return pasada;
+            return false;
+        }
+
+        private bool FuncionPasada(Funcion funcion)
+        {
+            if (funcion != null)
+            {
+                var (horaActual, fechaActual) = DateTimeHelper.ObtenerInfoDateTime();
+                return funcion.Fecha < fechaActual || (funcion.Fecha == fechaActual && funcion.Hora < horaActual);
+            }
+            return false;
         }
     }
 }

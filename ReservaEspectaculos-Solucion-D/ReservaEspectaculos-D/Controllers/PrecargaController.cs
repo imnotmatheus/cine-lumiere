@@ -41,6 +41,7 @@ namespace ReservaEspectaculos_D.Controllers
             CrearSalas().Wait();
             CrearPeliculas().Wait();
             CrearFunciones().Wait();
+            CrearReservas().Wait();
 
             return RedirectToAction("Index", "Home");
         }
@@ -107,20 +108,31 @@ namespace ReservaEspectaculos_D.Controllers
 
         private async Task CrearClientes()
         {
-            Cliente cliente = new Cliente()
+            for (int i = 0; i < 20; i++)
             {
-                Nombre = "Cliente",
-                Apellido = "1",
-                DNI = "F0000000",
-                Email = "cliente1@ort.edu.ar",
-                UserName = "cliente1@ort.edu.ar"
-            };
+                string dni;
+                if (i + 1 < 10)
+                {
+                    dni = "F000000";
+                } else
+                {
+                    dni = "F00000";
+                }
+                Cliente cliente = new()
+                {
+                    Nombre = "Cliente",
+                    Apellido = $"{i+1}",
+                    DNI = dni + (i + 1),
+                    Email = $"cliente{i+1}@ort.edu.ar",
+                    UserName = $"cliente{i+1}@ort.edu.ar"
+                };
 
-            var resultado = await _userManager.CreateAsync(cliente, Config.PasswordPorDefecto);
+                var resultado = await _userManager.CreateAsync(cliente, Config.PasswordPorDefecto);
 
-            if (resultado.Succeeded)
-            {
-                await _userManager.AddToRoleAsync(cliente, "Cliente");
+                if (resultado.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(cliente, "Cliente");
+                }
             }
         }
 
@@ -408,12 +420,15 @@ namespace ReservaEspectaculos_D.Controllers
                 new(20, 30)  // 20:30 hs
             };
 
-            var fechaInicial = DateOnly.FromDateTime(DateTime.Now);
+            // rango de dias para crear funciones en el pasado y futuro
+            int rangoDias = 8;
+
+            var fechaInicial = DateOnly.FromDateTime(DateTime.Now).AddDays(rangoDias * -1);
 
             foreach (var pelicula in peliculas)
             {
-                // Para los próximos 8 días
-                for (int dia = 0; dia < 8; dia++)
+                // Para el mes anterior y actual
+                for (int dia = 0; dia < (rangoDias * 2); dia++)
                 {
                     var fecha = fechaInicial.AddDays(dia);
 
@@ -429,7 +444,6 @@ namespace ReservaEspectaculos_D.Controllers
                             Fecha = fecha,
                             Hora = hora,
                             Descripcion = $"Función de {pelicula.Titulo}",
-                            ButacasDisponibles = salaAleatoria.CapacidadButacas,
                             Confirmada = true,
                             Reservas = new List<Reserva>()
                         };
@@ -438,6 +452,54 @@ namespace ReservaEspectaculos_D.Controllers
                     }
                 }
             }
+
+            await _db.SaveChangesAsync();
+        }
+
+        private async Task CrearReservas()
+        {
+            IEnumerable<Cliente> clientes = await _db.Clientes.ToListAsync();
+            IEnumerable<Funcion> funciones = await _db.Funciones.ToListAsync();
+            var fechaActual = DateOnly.FromDateTime(DateTime.Now);
+
+            // crear reservas pasadas para testeo de recaudacion etc
+            foreach (Cliente cliente in clientes)
+            {
+                foreach (Funcion funcion in funciones.Where(f => f.Fecha < fechaActual))
+                {
+                    // hacer reservas aleatorias en el pasado para todos los clientes y funciones
+                    if (random.Next(0, 100) < 30)
+                    {
+                        Reserva reserva = new()
+                        {
+                            // 1 o 2 butacas por cliente
+                            CantidadButacas = random.Next(1, 3),
+                            ClienteId = cliente.Id,
+                            FuncionId = funcion.Id,
+                            EstadoReserva = EstadoReserva.Activa
+                        };
+                            _db.Reservas.Add(reserva);
+                    }
+                }
+            }
+
+            // crear cinco reservas futuras
+            for (int i = 1; i < 6; i++)
+            {
+                var cliente = clientes.ElementAt(clientes.Count() - i);
+                // agrego un dia a la fecha para testear cancelar la reserva
+                var funcion = funciones.Where(f => f.Fecha >= fechaActual.AddDays(1)).FirstOrDefault();
+
+                Reserva reserva = new()
+                {
+                    CantidadButacas = random.Next(1, 3),
+                    ClienteId = cliente.Id,
+                    FuncionId = funcion.Id,
+                    EstadoReserva = EstadoReserva.Activa
+                };
+                _db.Reservas.Add(reserva);
+            }
+
 
             await _db.SaveChangesAsync();
         }

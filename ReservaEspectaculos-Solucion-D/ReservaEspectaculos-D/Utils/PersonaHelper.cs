@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ReservaEspectaculos_D.Data;
 
@@ -27,6 +28,11 @@ namespace ReservaEspectaculos_D.Utils
                    fecha.Hour * 100 +
                    fecha.Minute * 10 +
                    fecha.Second * 1 + fecha.Microsecond;
+        }
+
+        public static bool ClienteExists(int id, ReservaEspectaculosDb _context)
+        {
+            return _context.Clientes.Any(e => e.Id == id);
         }
     }
 }

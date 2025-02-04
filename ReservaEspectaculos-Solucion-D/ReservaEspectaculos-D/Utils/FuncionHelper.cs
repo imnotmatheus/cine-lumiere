@@ -6,6 +6,30 @@ namespace ReservaEspectaculos_D.Utils
 {
     public static class FuncionHelper
     {
+        public const int DuracionFunciones = 3;
+
+
+        public static int ButacasDisponibles(Funcion f)
+        {
+            var reservas = f.Reservas;
+
+
+            if (reservas.IsNullOrEmpty())
+            {
+                return f.Sala.CapacidadButacas;
+            }
+
+            int cantidadReservadas = 0;
+
+            foreach (Reserva reserva in f.Reservas)
+            {
+                cantidadReservadas += reserva.CantidadButacas;
+            }
+            return f.Sala.CapacidadButacas - cantidadReservadas;
+
+        }
+
+
 
         public static decimal calcularRecaudacion(Funcion f)
         {
@@ -20,8 +44,12 @@ namespace ReservaEspectaculos_D.Utils
                 return cantButacas * f.Sala.TipoSala.Precio;
             }
             return 0;
-
-
         }
+
     }
+
 }
+
+
+    
+

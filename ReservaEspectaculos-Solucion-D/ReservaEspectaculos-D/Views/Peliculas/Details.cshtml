@@ -46,11 +46,11 @@
             <table class="table table-bordered">
                 <thead class="table-light">
                     <tr>
-                        <th colspan="@(Model.Funciones.Select(f => f.Fecha).Distinct().Count() + 1)" class="text-center">Próximas funciones</th>
+                        <th colspan="@(Model.Funciones.Select(fI => fI.Funcion.Fecha).Distinct().Count() + 1)" class="text-center">Próximas funciones</th>
                     </tr>
                     <tr>
                         <th>Sala</th>
-                        @foreach (var fecha in Model.Funciones.Select(f => f.Fecha).Distinct().OrderBy(f => f))
+                        @foreach (var fecha in Model.Funciones.Select(fI => fI.Funcion.Fecha).Distinct().OrderBy(f => f))
                         {
                             <th>@fecha</th>
                         }
@@ -58,8 +58,8 @@
                 </thead>
                 <tbody>
                     @{
-                        var salas = Model.Funciones.Select(f => f.Sala).Distinct().OrderBy(s => s.Numero);
-                        var fechas = Model.Funciones.Select(f => f.Fecha).Distinct().OrderBy(f => f);
+                        var salas = Model.Funciones.Select(fI => fI.Funcion.Sala).Distinct().OrderBy(s => s.Numero);
+                        var fechas = Model.Funciones.Select(fI => fI.Funcion.Fecha).Distinct().OrderBy(f => f);
                     }
 
                     @foreach (var sala in salas)
@@ -79,28 +79,28 @@
                                 <td>
                                     @{
                                         var funcionesSala = Model.Funciones
-                                        .Where(f => f.Sala.Id == sala.Id && f.Fecha == fecha)
-                                        .OrderBy(f => f.Hora);
+                                        .Where(fI => fI.Funcion.Sala.Id == sala.Id && fI.Funcion.Fecha == fecha)
+                                        .OrderBy(fI => fI.Funcion.Hora);
                                     }
-                                    @foreach (var funcion in funcionesSala)
+                                    @foreach (var funcionEnIndex in funcionesSala)
                                     {
-                                        @if (funcion.ButacasDisponibles > 0)
+                                        @if (funcionEnIndex.ButacasDisponibles > 0)
                                         {
                                             <a asp-action="Details"
                                                 asp-controller="Funciones"
-                                                asp-route-id="@funcion.Id"
+                                               asp-route-id="@funcionEnIndex.Funcion.Id"
                                                class="badge rounded-pill bg-primary text-white me-1 mb-1 text-decoration-none"
-                                                  title="@funcion.Descripcion - @funcion.Hora">
-                                                @funcion.Hora
+                                               title="@funcionEnIndex.Funcion.Descripcion - @funcionEnIndex.Funcion.Hora">
+                                                @funcionEnIndex.Funcion.Hora
                                             </a>
                                         }
                                         else
                                         {
                                             <a asp-action="Details"
                                                 asp-controller="Funciones"
-                                                asp-route-id="@funcion.Id" class="badge rounded-pill bg-secondary text-white me-1 mb-1 text-decoration-none"
-                                                  title="@funcion.Descripcion - Sin butacas disponibles">
-                                                @funcion.Hora
+                                               asp-route-id="@funcionEnIndex.Funcion.Id" class="badge rounded-pill bg-secondary text-white me-1 mb-1 text-decoration-none"
+                                               title="@funcionEnIndex.Funcion.Descripcion - Sin butacas disponibles">
+                                                @funcionEnIndex.Funcion.Hora
                                             </a>
                                         }
                                     }

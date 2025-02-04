@@ -56,7 +56,7 @@ namespace ReservaEspectaculos_D.Controllers
             {
                 return NotFound();
             }
-            var fechaActual = DateTimeHelper.ObtenerFechaActual();
+            var fechaActual = DateOnly.FromDateTime(DateTime.Now);
             var ultimos30Dias = fechaActual.AddDays(-30);
 
             var pelicula = await _context.Peliculas
@@ -77,18 +77,26 @@ namespace ReservaEspectaculos_D.Controllers
 
             var funcionesUltimos30Dias = pelicula.Funciones.Where(f =>
                      (f.Fecha <= fechaActual && f.Fecha >= ultimos30Dias)).ToList();
+
+            List<FuncionEnIndex> funcionesEnIndex = [];
+
             if (!funcionesUltimos30Dias.IsNullOrEmpty())
             {
                 foreach (Funcion funcion in funcionesUltimos30Dias)
                 {
-                    recaudacionTotal += FuncionHelper.calcularRecaudacion(funcion);
+                    FuncionEnIndex funcionEnIndex = new() {
+                        Funcion = funcion,
+                        Recaudacion = FuncionHelper.calcularRecaudacion(funcion),
+                    ButacasDisponibles = FuncionHelper.ButacasDisponibles(funcion)
+                    };
+                    funcionesEnIndex.Add(funcionEnIndex);
                 }
             }
             DetallesPelicula model = new()
             {
                 Pelicula = pelicula,
                 RecaudacionTotal = recaudacionTotal,
-                Funciones = pelicula.Funciones
+                Funciones = funcionesEnIndex
             };
 
             return View(model);
@@ -123,6 +131,7 @@ namespace ReservaEspectaculos_D.Controllers
                 Funciones = PeliculaHelper.ObtenerFuncionesFuturasDePelicula(pelicula),
                 Genero = pelicula.Genero,
                 PathCartel = pelicula.PathCartel
+                
             };
 
             return View(model);
@@ -277,7 +286,7 @@ namespace ReservaEspectaculos_D.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!PeliculaExists(pelicula.Id))
+                    if (!PeliculaHelper.PeliculaExists(pelicula.Id, _context))
                     {
                         return NotFound();
                     }
@@ -335,14 +344,9 @@ namespace ReservaEspectaculos_D.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool PeliculaExists(int id)
+        public IActionResult TituloDisponible(string titulo, int? id)
         {
-            return _context.Peliculas.Any(e => e.Id == id);
-        }
-
-        public IActionResult TituloDisponible(string titulo)
-        {
-            if (TituloPeliculaExiste(titulo))
+            if (_context.Peliculas.Any(p => p.Titulo == titulo && p.Id != id))
             {
                 return Json(ErrorHelper.Titulo);
 

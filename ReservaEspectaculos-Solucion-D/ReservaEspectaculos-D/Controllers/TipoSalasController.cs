@@ -192,9 +192,9 @@ namespace ReservaEspectaculos_D.Controllers
         {
             return _context.TipoSalas.Any(e => e.Id == id);
         }
-        public IActionResult NombreDisponible(string nombre)
+        public IActionResult NombreDisponible(string nombre, int? id)
         {
-            if (_context.TipoSalas.Any(ts => ts.Nombre == nombre))
+            if (_context.TipoSalas.Any(ts => ts.Nombre == nombre && ts.Id != id))
             {
                 return Json(ErrorHelper.Nombre);
 

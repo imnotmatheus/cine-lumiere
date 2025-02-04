@@ -10,7 +10,7 @@ namespace ReservaEspectaculos_D.Models
         public int Id { get; set; }
 
         [MaxLength(20, ErrorMessage = ErrorHelper.StrMax)]
-        [Remote(action:"NombreDisponible", controller:"TipoSalas")]
+        [Remote(action:"NombreDisponible", controller:"TipoSalas", AdditionalFields = nameof(Id))]
         public string Nombre { get; set; }
 
         [Required(ErrorMessage = ErrorHelper.Requerido)]

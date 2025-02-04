@@ -20,7 +20,7 @@ namespace ReservaEspectaculos_D.Utils
         public const string Nombre = "Este nombre ya está en uso.";
         public const string Titulo = "Este titulo ya está en uso.";
         public const string Legajo = "Este legajo ya está en uso.";
-        public const string FuncionDuplicada = "Ya existe una función en esta sala con el mismo horario, fecha y película.";
+        public const string FuncionDuplicada = "No se pueden superponer dos funciones en las mismas sala, fecha y hora";
         public const string SalaNumero = "Ya existe una sala con este numero";
         public static string ErrorGenerico(Exception e)
         {

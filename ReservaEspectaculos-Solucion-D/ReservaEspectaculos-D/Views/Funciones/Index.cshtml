@@ -2,175 +2,200 @@
 
 @{
     ViewData["Title"] = "Index";
+    var listaPeliculas = ViewData["PeliculaId"] as SelectList;
 }
 
 <h1>Lista de funciones</h1>
 
-<p>
-    <a asp-action="Create">Crear nueva</a>
-</p>
-<h3>Funciones futuras</h3>
-<hr />
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Fecha)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Hora)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Descripcion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.ButacasDisponibles)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Confirmada)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Pelicula)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Sala)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Recaudacion)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model) {
-            var fechaActual = DateOnly.FromDateTime(DateTime.Now);
-            var horaActual = TimeOnly.FromDateTime(DateTime.Now);
-            if (item.Funcion.Fecha > fechaActual || (item.Funcion.Fecha == fechaActual && item.Funcion.Hora > horaActual))
-            {
+<p><a asp-action="Create" class="btn btn-primary btn-sm">Crear nueva</a></p>
+
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Index">
+            <div class="row align-items-end">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="peliculaId">Pelicula</label>
+                        <select id="peliculaId" name="peliculaId" class="form-control form-control-sm" asp-items="ViewBag.PeliculaId">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="salaId">Sala</label>
+                        <select id="salaId" name="salaId" class="form-control form-control-sm" asp-items="ViewBag.SalaId">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-sm mr-2">Filtrar</button>
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">Limpiar</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<br />
+
+@if (Model.Any()) {
+    @foreach (var pelicula in Model.Select(fi => fi.Funcion.Pelicula).Distinct())
+    {
+        <h4>@pelicula.Titulo</h4>
+
+        <hr />
+        <h5>Funciones futuras</h5>
+
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.Fecha)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.Hora)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.Descripcion)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.ButacasDisponibles)/@Html.DisplayFor(modelItem => item.Funcion.Sala.CapacidadButacas)
-                    </td>
-                    <td>
-                        <form asp-action="CambiarConfirmacionFuncion" method="post">
-                            <input type="hidden" name="id" value="@item.Funcion.Id" />
-                            <div class="form-check form-switch">
-                                <input type="checkbox"
-                                class="form-check-input"
-                                @(item.Funcion.Confirmada ? "checked" : "")
-                                onchange="this.form.submit()"
-                                role="switch" />
-                            </div>
-                        </form>
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.Pelicula.Titulo)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.Sala.Id)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Recaudacion)
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Funcion.Id">Editar</a> |
-                        <a asp-action="Details" asp-route-id="@item.Funcion.Id">Detalles</a> |
-                        <a asp-action="VerReservas" asp-route-id="@item.Funcion.Id">Reservas</a> |
-                        <a asp-action="Delete" asp-route-id="@item.Funcion.Id">Eliminar</a>
-                    </td>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Funcion.Fecha)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Funcion.Hora)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.ButacasDisponibles)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Funcion.Confirmada)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Funcion.Sala)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Recaudacion) Estimada
+                    </th>
+                    <th></th>
                 </tr>
-            }  
-        }
-    </tbody>
-</table>
-<h3>Funciones pasadas</h3>
-<hr />
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Fecha)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Hora)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Descripcion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.ButacasDisponibles)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Confirmada)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Pelicula)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Funcion.Sala)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Recaudacion)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            var ahora = DateTime.Now;
-            var fechaActual = DateOnly.FromDateTime(ahora);
-            var horaActual = TimeOnly.FromDateTime(ahora);
-            if (item.Funcion.Fecha < fechaActual || (item.Funcion.Fecha == fechaActual && item.Funcion.Hora < horaActual))
-            {
+            </thead>
+            <tbody>
+                @foreach (var item in Model) {
+                    var fechaActual = DateOnly.FromDateTime(DateTime.Now);
+                    var horaActual = TimeOnly.FromDateTime(DateTime.Now);
+                    if ((item.Funcion.Fecha > fechaActual || (item.Funcion.Fecha == fechaActual && item.Funcion.Hora > horaActual)) &&
+                        item.Funcion.PeliculaId == pelicula.Id)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Funcion.Fecha)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Funcion.Hora)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ButacasDisponibles)/@Html.DisplayFor(modelItem => item.Funcion.Sala.CapacidadButacas)
+                            </td>
+                            <td>
+                                <form asp-action="CambiarConfirmacionFuncion" method="post">
+                                    <input type="hidden" name="id" value="@item.Funcion.Id" />
+                                    <div class="form-check form-switch">
+                                        <input type="checkbox"
+                                        class="form-check-input"
+                                        @(item.Funcion.Confirmada ? "checked" : "")
+                                        onchange="this.form.submit()"
+                                        role="switch" />
+                                    </div>
+                                </form>
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Funcion.Sala.Numero)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Recaudacion)
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Funcion.Id">Editar</a> |
+                                <a asp-action="Details" asp-route-id="@item.Funcion.Id">Detalles</a> |
+                                <a asp-action="VerReservas" asp-route-id="@item.Funcion.Id">Reservas</a> |
+                                <a asp-action="Delete" asp-route-id="@item.Funcion.Id">Eliminar</a>
+                            </td>
+                        </tr>
+                    }  
+                }
+            </tbody>
+        </table>
+        <h5>Funciones pasadas</h5>
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.Fecha)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.Hora)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.Descripcion)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.ButacasDisponibles)
-                    </td>
-                    <td>
-                        <div class="form-group form-check form-switch">
-                            <label class="form-check-label">
-                                <input class="form-check-input" checked="@item.Funcion.Confirmada" disabled type="checkbox" role="switch" />
-                            </label>
-                        </div>
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.Pelicula.Titulo)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Funcion.Sala.Id)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Recaudacion)
-                    </td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@item.Funcion.Id">Detalles</a> |
-                        <a asp-action="VerReservas" asp-route-id="@item.Funcion.Id">Reservas</a> |
-                        <a asp-action="Delete" asp-route-id="@item.Funcion.Id">Eliminar</a>
-                    </td>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Funcion.Fecha)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Funcion.Hora)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.ButacasDisponibles)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Funcion.Confirmada)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Funcion.Sala)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Recaudacion)
+                    </th>
+                    <th></th>
                 </tr>
-            }
-        }
-    </tbody>
-</table>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var ahora = DateTime.Now;
+                    var fechaActual = DateOnly.FromDateTime(ahora);
+                    var horaActual = TimeOnly.FromDateTime(ahora);
+                    if ((item.Funcion.Fecha < fechaActual || (item.Funcion.Fecha == fechaActual && item.Funcion.Hora < horaActual)) &&
+                        item.Funcion.PeliculaId == pelicula.Id)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Funcion.Fecha)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Funcion.Hora)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ButacasDisponibles)/@Html.DisplayFor(modelItem => item.Funcion.Sala.CapacidadButacas)
+                            </td>
+                            <td>
+                                <div class="form-group form-check form-switch">
+                                    <label class="form-check-label">
+                                        <input class="form-check-input" checked="@item.Funcion.Confirmada" disabled type="checkbox" role="switch" />
+                                    </label>
+                                </div>
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Funcion.Sala.Numero)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Recaudacion)
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.Funcion.Id">Detalles</a> |
+                                <a asp-action="VerReservas" asp-route-id="@item.Funcion.Id">Reservas</a> |
+                                <a asp-action="Delete" asp-route-id="@item.Funcion.Id">Eliminar</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    }
+} else
+{
+    <div class="col-12">
+        <div class="alert alert-info">
+            No se encontraron funciones con los parametros seleccionados
+        </div>
+    </div>
+}
 
 @section Scripts {
     @{

@@ -141,7 +141,7 @@ namespace ReservaEspectaculos_D.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!SalaExists(sala.Id))
+                    if (!SalaHelper.SalaExists(sala.Id, _context))
                     {
                         return NotFound();
                     }
@@ -164,11 +164,6 @@ namespace ReservaEspectaculos_D.Controllers
             return View(sala);
         }
 
-        private bool SalaExists(int id)
-        {
-            return _context.Salas.Any(e => e.Id == id);
-        }
-
         private async Task<bool> VerificarReservasActivas(Sala sala)
         {
             return await _context.Salas
@@ -187,9 +182,9 @@ namespace ReservaEspectaculos_D.Controllers
 
             return salaBD.TipoSalaId != salaModificada.TipoSalaId;
         }
-        public IActionResult NumeroDisponible(int numero)
+        public IActionResult NumeroDisponible(int numero, int? id)
         {
-            if (_context.Salas.Any(s => s.Numero == numero))
+            if (_context.Salas.Any(s => s.Numero == numero && s.Id != id))
             {
                 return Json(ErrorHelper.SalaNumero);
 
