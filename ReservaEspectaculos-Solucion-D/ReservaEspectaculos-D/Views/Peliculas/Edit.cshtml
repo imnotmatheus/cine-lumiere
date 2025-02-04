@@ -1,0 +1,65 @@
+﻿@model ReservaEspectaculos_D.Models.Pelicula
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Editar</h1>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Pelicula</h4>
+            <hr />
+            <div class="row">
+                <div class="col-md-4">
+                    <form asp-action="Edit" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <div class="form-group">
+                            <label asp-for="Titulo" class="control-label"></label>
+                            <input asp-for="Titulo" class="form-control" />
+                            <span asp-validation-for="Titulo" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FechaLanzamiento" class="control-label"></label>
+                            <input asp-for="FechaLanzamiento" class="form-control" />
+                            <span asp-validation-for="FechaLanzamiento" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Descripcion" class="control-label"></label>
+                            <textarea asp-for="Descripcion" class="form-control"></textarea>
+                            <span asp-validation-for="Descripcion" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="GeneroId" class="control-label"></label>
+                            <select asp-for="GeneroId" class="form-control" asp-items="ViewBag.GeneroId"></select>
+                            <span asp-validation-for="GeneroId" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Subir imagen</label>
+                            <input type="file" name="cartel" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Save" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="image-container">
+                <img class="img-fluid" alt="@Model.Titulo" src="@(Model.PathCartel)" style="min-width: 300px; max-width: 450px;" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Volver</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,42 @@
+﻿@model Login
+
+@{
+    ViewData["Title"] = "Iniciar sesión";
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="IniciarSesion">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" asp-for="RememberMe" class="custom-control-input" />
+                    <label class="custom-control-label" for="customControlInline">Remember me</label>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+                <input type="submit" value="Iniciar sesion" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="mt-4">
+        No tenes cuenta? <a asp-action="RegistroCliente" class="ml-2">Registrate</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

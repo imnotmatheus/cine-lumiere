@@ -1,0 +1,107 @@
+﻿@model InfoPelicula
+
+@{
+    ViewData["Title"] = Model.Titulo;
+}
+
+<h1>@Model.Titulo</h1>
+
+<div class="container">
+    <hr />
+    <div class="row">
+        <div class="col-sm">
+            <dl class="row">
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Titulo)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Titulo)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.FechaLanzamiento)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.FechaLanzamiento)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Descripcion)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Descripcion)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Genero)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Genero.Nombre)
+                </dd>
+            </dl>
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th colspan="2" class="text-center">Próximas funciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var funcionesOrdenadas = Model.Funciones
+                        .OrderBy(f => f.Fecha)
+                        .ThenBy(f => f.Hora)
+                        .GroupBy(f => f.Fecha);
+                    }
+                    @foreach (var grupoFecha in funcionesOrdenadas)
+                    {
+                        <tr>
+                            <td class="align-middle" style="width: 30%;">
+                                @grupoFecha.Key
+                            </td>
+                            <td>
+                                @foreach (var funcion in grupoFecha)
+                                {
+                                    if (funcion.ButacasDisponibles > 0) {
+                                    <a asp-controller="Reservas"
+                                       asp-action="Seleccionbutacas"
+                                       asp-route-peliculaid="@Model.PeliculaId"
+                                       asp-route-funcionid="@funcion.Id"
+                                       class="btn btn-outline-primary btn-sm me-2 mb-2">
+                                        @funcion.Hora
+                                        @funcion.Sala.TipoSala.Nombre
+                                        </a>
+                                    } else
+                                    {
+                                        <span class="btn btn-outline-secondary btn-sm me-2 mb-2 disabled"
+                                              title="No hay butacas disponibles">
+                                            @funcion.Hora
+                                        </span>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div>
+                <p>
+                    <a asp-action="Cartelera" class="btn btn-outline-primary btn-sm me-2 mb-2">Ver cartelera</a>
+                </p>
+            </div>
+        </div>
+        <div class="col-sm">
+            @if (Model.PathCartel != null)
+            {
+                <img src=@Model.PathCartel class="card-img-top" alt="Película 1" style="width:50%">
+            }
+            else
+            {
+                <img src="https://via.placeholder.com/150x225" class="card-img-top" alt="Película 1" style="width:50%">
+            }
+        </div>
+
+    </div>
+    
+    
+</div>
+<div>
+    
+</div>

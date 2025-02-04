@@ -1,0 +1,68 @@
+﻿@model IEnumerable<ReservaEspectaculos_D.Models.Pelicula>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Lista de peliculas</h1>
+
+<p>
+    <a asp-action="Create">Crear nueva</a>
+</p>
+<div class="col-sm-2">
+<form asp-action="Index">
+    <select class="form-select" name="generoId" onchange="this.form.submit()" aria-label="Genero">
+        <option value="">Seleccione un genero</option>
+        <option value="-1">Todos</option>
+        @foreach (Genero g in (IEnumerable<Genero>)ViewData["generos"])
+        {
+            <option value="@g.Id">
+                @g.Nombre
+            </option>
+        }
+    </select>
+</form>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Titulo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FechaLanzamiento)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Descripcion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Genero)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Titulo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaLanzamiento)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Descripcion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Genero.Nombre)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Detalles</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

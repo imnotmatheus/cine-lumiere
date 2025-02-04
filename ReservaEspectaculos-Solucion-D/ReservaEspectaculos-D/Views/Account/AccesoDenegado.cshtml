@@ -1,0 +1,12 @@
+﻿@{
+    ViewData["Title"] = "Acceso Denegado";
+}
+
+<h1> Su usuario no tiene los permisos necesarios.
+    @if(!string.IsNullOrEmpty(ViewBag.ReturnUrl))
+    {
+        <span>Para ingresar a @ViewBag.ReturnUrl</span>
+    }
+</h1>
+
+

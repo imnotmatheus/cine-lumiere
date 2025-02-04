@@ -1,0 +1,15 @@
+﻿.movie-card {
+    height: 100%;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.movie-card.selected {
+    border: 3px solid #007bff;
+    box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+}

@@ -1,0 +1,34 @@
+﻿@model IEnumerable<ReservaEspectaculos_D.Models.TipoSala>
+
+@{
+    ViewData["Title"] = "Precios";
+}
+
+<h1>Precios por tipo de sala</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                
+            </th>
+            <th>
+                
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Nombre)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Precio)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

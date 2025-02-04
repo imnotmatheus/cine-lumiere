@@ -1,0 +1,52 @@
+﻿@model Cartelera
+
+<div class="text-center">
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Películas en exibición</h1>
+        <hr />
+        <div class="col-sm-2">
+            <form asp-action="Cartelera">
+                <select class="form-select" name="generoId" onchange="this.form.submit()" aria-label="Genero">>
+                    <option value="">Seleccione un genero</option>
+                    <option value="-1">Todos</option>
+                    @foreach (Genero g in Model.Generos)
+                    {
+                        <option value="@g.Id">@g.Nombre</option>
+                    }
+                </select>
+            </form>
+            
+        </div>
+        <br />
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            <!-- Tarjeta de película 1 -->
+            @foreach (Pelicula pelicula in Model.Peliculas)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        @if (pelicula.PathCartel != null)
+                        {
+
+                            <a asp-controller="Peliculas" asp-action="InfoPelicula" asp-route-peliculaid="@pelicula?.Id"><img src=@pelicula.PathCartel class="card-img-top" alt="Película 1" style="width:100%"></a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Peliculas" asp-action="InfoPelicula" asp-route-peliculaid="@pelicula?.Id"><img src="https://via.placeholder.com/150x225" class="card-img-top" alt="Película 1" style="width:100%"></a>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title text-center">@pelicula.Titulo</h5>
+                            <a asp-controller="Reservas"
+                               asp-action="Seleccionbutacas"
+                               asp-route-peliculaid="@pelicula.Id"
+                               class="btn btn-outline-primary btn-sm me-2 mb-2">
+                                Reservar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>

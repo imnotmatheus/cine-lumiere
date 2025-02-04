@@ -1,0 +1,73 @@
+﻿@model MisReservasCliente
+<h4>Mis reservas</h4>
+<hr />
+<h5>Reservas vigentes</h5>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ReservasVigentes.FirstOrDefault().Funcion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ReservasVigentes.FirstOrDefault().CantidadButacas)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.ReservasVigentes)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Funcion.Descripcion) |
+                    @Html.DisplayFor(modelItem => item.Funcion.Fecha) |
+                    @Html.DisplayFor(modelItem => item.Funcion.Hora)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CantidadButacas)
+                </td>
+                <td>
+                    <a asp-controller="Clientes" asp-action="DetalleReserva" asp-route-id="@item.Id">Detalle</a> |
+                    <a asp-controller="Clientes" asp-action="EliminarReserva" asp-route-id="@item.Id">Eliminar reserva</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<hr />
+<h5>Reservas pasadas</h5>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ReservasPasadas.FirstOrDefault().Funcion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ReservasPasadas.FirstOrDefault().CantidadButacas)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.ReservasPasadas)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Funcion.Descripcion) |
+                    @Html.DisplayFor(modelItem => item.Funcion.Fecha) |
+                    @Html.DisplayFor(modelItem => item.Funcion.Hora)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CantidadButacas)
+                </td>
+                <td>
+                    <a asp-controller="Reservas" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-controller="Reservas" asp-action="Create" class="btn btn-primary text-white my-2">
+    Reservar
+</a>

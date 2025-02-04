@@ -1,0 +1,15 @@
+﻿@model HacerReserva
+
+
+<form asp-action="SeleccionFuncion" method="get">
+    <input asp-for="ClienteId" type="number" hidden />
+    <input asp-for="PeliculaId" type="number" hidden />
+    <input asp-for="FuncionSeleccionadaId" type="number" hidden />
+    Cantidad de butacas:
+    <input asp-for="CantidadButacas" type="number" min="1" required />
+    @if (Model.FuncionSeleccionada != null)
+    {
+        <p>Butacas disponibles: @Model.FuncionSeleccionada.ButacasDisponibles</p>
+    }
+    <input type="submit" value="Siguiente" class="btn btn-primary" />
+</form>

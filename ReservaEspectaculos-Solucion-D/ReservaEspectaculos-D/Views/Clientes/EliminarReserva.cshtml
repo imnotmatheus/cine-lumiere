@@ -1,0 +1,46 @@
+﻿@model ReservaEspectaculos_D.Models.Reserva
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+@{
+    ViewData["Title"] = "Eliminar Reserva";
+}
+
+<h1>Eliminar</h1>
+
+<h3>¿Estás seguro de que queres hacer esto?</h3>
+<div>
+    <h4>Reserva</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Funcion)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Funcion.Descripcion) |
+            @Html.DisplayFor(model => model.Funcion.Fecha) |
+            @Html.DisplayFor(model => model.Funcion.Hora)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.FechaAlta)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.FechaAlta)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.CantidadButacas)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.CantidadButacas)
+        </dd>
+    </dl>
+
+    <form asp-action="EliminarReserva">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Eliminar" class="btn btn-danger" />
+        <a asp-action="MisReservas" class="btn btn-primary text-white my-2">Volver a mis reservas</a>
+    </form>
+</div>

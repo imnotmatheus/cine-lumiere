@@ -1,0 +1,92 @@
+﻿@model HacerReserva
+
+<form asp-action="ConfirmarReserva" method="get">
+    <input asp-for="CantidadButacas" hidden />
+    <input asp-for="ClienteId" hidden />
+    
+    <div class="row g-3">
+        @if (Model.Funciones != null && Model.Funciones.Any())
+        {
+            @foreach (var funcion in Model.Funciones.OrderBy(f => f.Fecha).ThenBy(f => f.Hora))
+            {
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="radio" 
+                                       name="FuncionId" 
+                                       value="@funcion.Id" 
+                                       id="funcion-@funcion.Id"
+                                       required>
+                                <label class="form-check-label w-100" for="funcion-@funcion.Id">
+                                    <h5 class="mb-3">@funcion.Fecha.ToString("dddd dd/MM", new System.Globalization.CultureInfo("es-ES"))</h5>
+                                    <p class="mb-2">Horario: @funcion.Hora.ToString("HH:mm")</p>
+                                    @if (funcion.Sala?.TipoSala != null)
+                                    {
+                                        <p class="mb-2">Sala: @funcion.Sala.TipoSala.Nombre</p>
+                                        <p>Precio: @funcion.Sala.TipoSala.Precio.ToString("N2")</p>
+                                    }
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary" id="btnSubmit" disabled>
+                    Siguiente
+                </button>
+            </div>
+        }
+        else if (Model.FuncionSeleccionada != null)
+        {
+            var funcion = Model.FuncionSeleccionada;
+
+            <h4 class="text-center">Fecha y horario seleccionados</h4>
+            <div class="col-12 col-md-6 col-lg-4 mx-auto">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <input type="hidden" name="FuncionId" value="@funcion.Id">
+                        <div class="p-2">
+                            <h5 class="mb-3">@funcion.Fecha.ToString("dddd dd/MM", new System.Globalization.CultureInfo("es-ES"))</h5>
+                            <p class="mb-2">Horario: @funcion.Hora.ToString("HH:mm")</p>
+                            @if (funcion.Sala?.TipoSala != null)
+                            {
+                                <p class="mb-0">Sala: @funcion.Sala.TipoSala.Nombre</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">
+                    Siguiente
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No hay funciones disponibles
+                </div>
+            </div>
+        }
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const radioButtons = document.querySelectorAll('input[name="FuncionId"]');
+            const submitButton = document.getElementById('btnSubmit');
+            
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    submitButton.disabled = !document.querySelector('input[name="FuncionId"]:checked');
+                });
+            });
+        });
+    </script>
+}

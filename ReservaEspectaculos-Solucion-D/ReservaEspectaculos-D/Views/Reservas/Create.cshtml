@@ -1,0 +1,65 @@
+﻿@model ReservaEspectaculos_D.Models.Reserva
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/reservas.css" />
+}
+
+<h1>Hacé tu reserva</h1>
+
+<h4>Primero elegí tu película</h4>
+<hr />
+<div class="row">
+        <form asp-action="SeleccionButacas">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ClienteId" />
+            <input type="hidden" id="selectedPeliculaId" name="peliculaId" value="" />
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+                @foreach (var pelicula in ViewBag.peliculas)
+                    {
+                        <div class="col">
+                            <div class="card movie-card" onclick="seleccionarPelicula(@pelicula.Id, this)">
+                                @if (pelicula.PathCartel != null)
+                                {
+                                    <img src=@pelicula.PathCartel class="card-img-top" alt="Película 1" style="width:100%; height:85%">
+                                }
+                                else
+                                {
+                                    <img src="https://via.placeholder.com/150x225" class="card-img-top" alt="Película 1" style="width:100%; height:85%">
+                                }
+                                <div class="card-body">
+                                    <h5 class="card-title text-center">@pelicula.Titulo</h5>
+                                </div>
+                            </div>
+                        </div>
+                    }
+            </div>
+            <div class="form-group mt-5">
+                <input id="submitBtn" type="submit" value="Siguiente" class="btn btn-primary" disabled />
+            </div>
+        </form>
+</div>
+
+<div>
+    <a asp-controller="Clientes" asp-action="MisReservas">Volver</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function seleccionarPelicula(peliculaId, elemento) {
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            elemento.classList.add('selected');
+            document.getElementById('selectedPeliculaId').value = peliculaId;
+            document.getElementById('submitBtn').disabled = false;
+        }
+    </script>
+}

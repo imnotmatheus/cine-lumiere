@@ -1,0 +1,43 @@
+﻿@model IEnumerable<Pelicula>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Cine Lumière</h1>
+
+    <div class="container mt-5">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            <!-- Tarjeta de película 1 -->
+            @foreach(Pelicula pelicula in Model.Take(4))
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        @if (pelicula.PathCartel != null) {
+
+                            <a asp-controller="Peliculas" asp-action="InfoPelicula" asp-route-peliculaid="@pelicula?.Id"><img src=@pelicula.PathCartel class="card-img-top" alt="Película 1" style="width:100%"></a>
+                        } else
+                        {
+                            <a asp-controller="Peliculas" asp-action="InfoPelicula" asp-route-peliculaid="@pelicula?.Id"><img src="https://via.placeholder.com/150x225" class="card-img-top" alt="Película 1" style="width:100%"></a>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title text-center">@pelicula.Titulo</h5>
+                            <a asp-controller="Reservas"
+                            asp-action="Seleccionbutacas"
+                            asp-route-peliculaid="@pelicula.Id"
+                            class="btn btn-outline-primary btn-sm me-2 mb-2">
+                            Reservar</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <br />
+        <a asp-controller="Peliculas"
+            asp-action="Cartelera"
+            class="btn btn-outline-primary btn-sm me-2 mb-2">
+            Ver cartelera completa
+        </a>
+        
+    </div>
+</div>

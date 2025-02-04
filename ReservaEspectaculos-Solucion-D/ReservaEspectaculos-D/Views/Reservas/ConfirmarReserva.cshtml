@@ -1,0 +1,52 @@
+﻿@model ConfirmarReserva
+
+<h4>Detalles de tu reserva:</h4>
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Pelicula)
+    </dt>
+    <dd class="col-sm-10">
+        @Model.Pelicula.Titulo
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Sala)
+    </dt>
+    <dd class="col-sm-10">
+        @Model.Sala.Numero - @Model.Sala.TipoSala.Nombre
+     </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.CantidadButacas)
+    </dt>
+    <dd class="col-sm-10">
+        @Model.CantidadButacas
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.PrecioTotal)
+    </dt>
+    <dd class="col-sm-10">
+        @Model.PrecioTotal.ToString("N2")
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Fecha)
+    </dt>
+    <dd class="col-sm-10">
+        @Model.Fecha
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Hora)
+    </dt>
+    <dd class="col-sm-10">
+        @Model.Hora
+    </dd>
+</dl>
+
+<form asp-action="ConfirmarReserva" method="post">
+    <input asp-for="PeliculaId" type="hidden" value="@Model.Pelicula.Id" />
+    <input asp-for="SalaId" type="hidden" value="@Model.Sala.Id" />
+    <input asp-for="Fecha" type="hidden" />
+    <input asp-for="Hora" type="hidden" />
+    <input asp-for="CantidadButacas" type="hidden" />
+    <input asp-for="ClienteId" type="hidden" />
+    <input asp-for="FuncionId" type="hidden" />
+    <input type="submit" class="btn btn-primary" />
+</form>

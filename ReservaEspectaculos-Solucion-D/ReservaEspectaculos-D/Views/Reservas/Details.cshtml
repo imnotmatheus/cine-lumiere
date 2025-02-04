@@ -1,0 +1,44 @@
+﻿@model ReservaEspectaculos_D.Models.Reserva
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Detalles</h1>
+
+<div>
+    <h4>Reserva</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Funcion)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Funcion.Descripcion) |
+            @Html.DisplayFor(model => model.Funcion.Fecha) |
+            @Html.DisplayFor(model => model.Funcion.Hora) |
+            @Html.DisplayFor(Model => Model.Funcion.Sala.TipoSala.Nombre)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.FechaAlta)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FechaAlta)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.CantidadButacas)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CantidadButacas)
+        </dd>
+    </dl>
+</div>
+<div>
+    @if (User.IsInRole("Cliente")) {
+            <a asp-controller="Clientes" asp-action="MisReservas">Volver a Mis Reservas</a >
+        } else
+        {
+            <a asp-controller="Funciones" asp-action="VerReservas" asp-route-id="@Model.FuncionId">Volver a reservas de la funcion @Model.FuncionId</a>
+        }
+    </p>
+</div>
