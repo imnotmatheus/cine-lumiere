@@ -28,7 +28,10 @@
                         @if (pelicula.PathCartel != null)
                         {
 
-                            <a asp-controller="Peliculas" asp-action="InfoPelicula" asp-route-peliculaid="@pelicula?.Id"><img src=@pelicula.PathCartel class="card-img-top" alt="Película 1" style="width:100%"></a>
+                            <a asp-controller="Peliculas" asp-action="InfoPelicula" asp-route-peliculaid="@pelicula?.Id">
+                                <img src=@pelicula.PathCartel class="card-img-top" alt="Película 1"
+                                     style="width: 100%; height: 400px; object-fit: cover; aspect-ratio: 150/225;">
+                            </a>
                         }
                         else
                         {
